@@ -17,18 +17,13 @@ const SLEEP: u64 = 10 * INTERVAL;
 
 pub(crate) type Value = BTreeMap<u64, f32>;
 
-pub(crate) fn serve() -> [Receiver<Value>; 2] {
-    let (mut sender, receiver) = broadcast::channel(2);
-    let receivers = [receiver, sender.subscribe()];
-    spawn(async move {
-        loop {
-            if let Err(error) = run(&mut sender).await {
-                error!(%error);
-            }
-            sleep(Duration::from_secs(SLEEP)).await;
+pub(crate) async fn serve(mut sender: Sender<Value>) {
+    loop {
+        if let Err(error) = run(&mut sender).await {
+            error!(%error);
         }
-    });
-    receivers
+        sleep(Duration::from_secs(SLEEP)).await;
+    }
 }
 
 async fn run(sender: &mut Sender<Value>) -> Result<()> {

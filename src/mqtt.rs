@@ -12,9 +12,9 @@ const MQTT_TOPIC_TEMPERATURE: &str = "ippras.ru/blca/temperature";
 const CAPACITY: usize = 9;
 const SLEEP: u64 = 1;
 
-pub(crate) async fn serve(temperature_receiver: &mut Receiver<Value>) {
+pub(crate) async fn serve(mut temperature_receiver: Receiver<Value>) {
     loop {
-        if let Err(error) = run(temperature_receiver).await {
+        if let Err(error) = run(&mut temperature_receiver).await {
             error!(%error);
         }
         sleep(Duration::from_secs(SLEEP)).await;

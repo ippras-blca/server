@@ -1,8 +1,10 @@
 #![feature(iter_array_chunks)]
+#![feature(proc_macro_hygiene)]
+#![feature(stmt_expr_attributes)]
 
 use anyhow::Result;
 use clap::Parser;
-use tokio::{spawn, task};
+use tokio::{join, spawn, sync::broadcast, task};
 use tracing::{debug, trace};
 
 /// MQTT broker
@@ -27,9 +29,12 @@ async fn main() -> Result<()> {
     // debug!(?config);
     // let mut broker = Broker::new(config);
     // let (tx, rx) = broker.link("repeater")?;
-    let mut temperature_receivers = temperature::serve();
-    mqtt::serve(&mut temperature_receivers[0]).await;
-    logger::serve(&mut temperature_receivers[1]).await;
+    // let receivers = [receiver, sender.subscribe()];
+    let (sender, receiver) = broadcast::channel(2);
+    spawn(mqtt::serve(receiver));
+    let receiver = sender.subscribe();
+    spawn(logger::serve(receiver));
+    let _ = spawn(temperature::serve(sender)).await;
     Ok(())
 }
 

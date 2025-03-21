@@ -6,11 +6,13 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0.97"
+arrow = "54.2.1"
 clap = { version = "4.5.32", features = ["derive"] }
 config = "0.15.11"
 console-subscriber = "0.4.1"
+futures-async-stream = "0.2.12"
 google_drive = { git = "https://github.com/ippras-blc/google_drive" }
-parquet = "54.2.1"
+parquet = { version = "54.2.1", features = ["async"] }
 ron = "0.9.0"
 rumqttc = "0.24.0"
 rumqttd = "0.19.0"
