@@ -6,13 +6,18 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0.97"
+arrow = "54.2.1"
+chrono = "0.4.40"
 clap = { version = "4.5.32", features = ["derive"] }
 config = "0.15.11"
 console-subscriber = "0.4.1"
+futures-async-stream = "0.2.12"
 google_drive = { git = "https://github.com/ippras-blc/google_drive" }
-polars = { git = "https://github.com/pola-rs/polars", rev = "be5a4b453ca74bb5e0c782c292e9fca6aa60b203", features = [
+parquet = { version = "54.2.1", features = ["async"] }
+polars = { version = "0.46.0", features = [
     "dtype-datetime",
     "fmt_no_tty",
+    "ipc",
     "serde",
     "temporal",
 ], default-features = false }
@@ -20,12 +25,13 @@ ron = "0.9.0"
 rumqttc = "0.24.0"
 rumqttd = "0.19.0"
 serde = { version = "1.0.219", features = ["derive"] }
-time = "0.3.40"
-timed = { git = "https://github.com/ippras-blc/timed", features = ["serde"] }
+thiserror = "2.0.12"
 tokio = { version = "1.44.1", features = [
     "rt-multi-thread",
     "sync",
+    "time",
     "tracing",
 ] }
+tokio-modbus = "0.16.1"
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }

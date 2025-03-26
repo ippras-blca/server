@@ -7,17 +7,20 @@
 [source,rust]
 cd ~/git/kgv/_ippras/blc/crates/bins/broker
 cd /mnt/d/g/git/kgv/_ippras/blc/crates/bins/broker
-export RUST_LOG="warn,broker=debug"
+export RUST_LOG="warn,server=debug"
 cargo run -- --config=config.toml
 
 === Win
 
 [source,rust]
 cd D:\g\git\ippras-blc\_bins\broker
-$Env:RUST_LOG="warn,broker=debug"
+$Env:RUST_LOG="warn,server=debug"
 cargo run -- --config=config.toml
 
 == Links
 
+* link:https://github.com/apache/arrow-rs-object-store[Rust Object Store]
+
+* link:https://github.com/apache/datafusion/pull/7562[Parallelize Parquet Serialization]
 * link:[]
 
