@@ -1,9 +1,11 @@
 use anyhow::Result;
 use chrono::{DateTime, Local};
-use std::time::Duration;
+use serde::{Deserialize, Serialize};
+use std::fmt::{self, Display, Formatter};
 use tokio::{
     sync::broadcast::Sender,
-    time::{interval, sleep, timeout},
+    task::JoinHandle,
+    time::{Duration, interval, sleep, timeout},
 };
 use tokio_modbus::{client::Context, prelude::*};
 use tracing::{debug, error};
@@ -15,9 +17,7 @@ const INTERVAL: u64 = 1;
 const TIMEOUT: u64 = 2 * INTERVAL;
 const SLEEP: u64 = 10 * INTERVAL;
 
-pub(crate) type Value = (Vec<u64>, Vec<f32>, DateTime<Local>);
-
-pub(crate) async fn serve(mut sender: Sender<Value>) {
+pub(crate) async fn start(mut sender: Sender<Message>) -> JoinHandle<()> {
     loop {
         if let Err(error) = run(&mut sender).await {
             error!(%error);
@@ -26,24 +26,24 @@ pub(crate) async fn serve(mut sender: Sender<Value>) {
     }
 }
 
-async fn run(sender: &mut Sender<Value>) -> Result<()> {
+async fn run(sender: &mut Sender<Message>) -> Result<()> {
     let socket_addr = MODBUS_SERVER_ADDRESS.parse().unwrap();
     let mut context = tcp::connect(socket_addr).await?;
     let mut interval = interval(Duration::from_secs(INTERVAL));
     loop {
         interval.tick().await;
-        let temperatures = timeout(Duration::from_secs(TIMEOUT), read(&mut context)).await??;
-        debug!("temperatures: {temperatures:x?}");
-        sender.send(temperatures)?;
+        let response = timeout(Duration::from_secs(TIMEOUT), read(&mut context)).await??;
+        debug!("temperature response: {response:x?}");
+        sender.send(response)?;
     }
 }
 
-async fn read(context: &mut Context) -> Result<Value> {
+async fn read(context: &mut Context) -> Result<Message> {
     let date_time = Local::now();
     let data = context
         .read_input_registers(0, COUNT * INPUT_REGISTER_SIZE)
         .await??;
-    let (identifiers, temperatures) = data
+    let (identifiers, values) = data
         .into_iter()
         .array_chunks()
         .map(|[ab, cd, ef, gh, ij, kl]| {
@@ -59,5 +59,26 @@ async fn read(context: &mut Context) -> Result<Value> {
             )
         })
         .unzip();
-    Ok((identifiers, temperatures, date_time))
+    Ok(Message {
+        identifiers,
+        values,
+        date_time,
+    })
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+pub(crate) struct Message {
+    pub(crate) identifiers: Vec<u64>,
+    pub(crate) values: Vec<f32>,
+    pub(crate) date_time: DateTime<Local>,
+}
+
+impl Display for Message {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        writeln!(
+            f,
+            "identifiers = {:x?}, values = {:?}, date_time = {}",
+            self.identifiers, self.values, self.date_time,
+        )
+    }
 }

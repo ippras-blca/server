@@ -6,14 +6,15 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0.97"
-arrow = "54.2.1"
+arrow = "54.3.0"
 chrono = "0.4.40"
-clap = { version = "4.5.32", features = ["derive"] }
+clap = { version = "4.5.34", features = ["derive"] }
 config = "0.15.11"
 console-subscriber = "0.4.1"
 futures-async-stream = "0.2.12"
 google_drive = { git = "https://github.com/ippras-blc/google_drive" }
-parquet = { version = "54.2.1", features = ["async"] }
+object_store = "0.11.0"
+parquet = { version = "54.3.0", features = ["arrow", "async", "object_store"] }
 polars = { version = "0.46.0", features = [
     "dtype-datetime",
     "fmt_no_tty",
@@ -33,5 +34,7 @@ tokio = { version = "1.44.1", features = [
     "tracing",
 ] }
 tokio-modbus = "0.16.1"
+tokio-util = "0.7.14"
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
+typed-builder = "0.21.0"
