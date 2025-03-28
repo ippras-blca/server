@@ -1,4 +1,4 @@
-use super::{FLUSH, WRITE, Writer};
+use super::Writer;
 use crate::temperature::Message as TemperatureMessage;
 use anyhow::Result;
 use arrow::{
@@ -6,11 +6,13 @@ use arrow::{
     datatypes::{DataType, Field, Schema, TimeUnit},
 };
 use object_store::local::LocalFileSystem;
-use std::{cell::OnceCell, sync::Arc};
+use std::sync::Arc;
 use tokio::sync::broadcast::{Receiver, error::RecvError};
 use tracing::{debug, info, warn};
 
 const TEMPERATURE: &str = "temperature";
+const FLUSH: usize = 120;
+const WRITE: usize = 10;
 
 /// parquet
 pub async fn run(receiver: &mut Receiver<TemperatureMessage>) -> Result<()> {
@@ -24,9 +26,13 @@ pub async fn run(receiver: &mut Receiver<TemperatureMessage>) -> Result<()> {
         ),
     ]));
     let store = Arc::new(LocalFileSystem::new());
-    let mut writer = OnceCell::<Writer>::new();
+    let builder = Writer::builder()
+        .schema(schema.clone())
+        .store(store)
+        .folder(TEMPERATURE);
+    let mut maybe_writer = None;
     loop {
-        if let Some(writer) = writer.get() {
+        if let Some(writer) = &maybe_writer {
             debug!(?writer);
         }
         let TemperatureMessage {
@@ -41,9 +47,10 @@ pub async fn run(receiver: &mut Receiver<TemperatureMessage>) -> Result<()> {
             }
             Err(error) => Err(error)?,
         };
-        let writer = writer.get_mut_or_try_init(|| {
-            Writer::new(store.clone(), schema.clone(), TEMPERATURE, date_time)
-        })?;
+        let writer = match &mut maybe_writer {
+            Some(writer) => writer,
+            None => maybe_writer.insert(builder.clone().date_time(date_time).build()?),
+        };
         let count = identifiers.len();
         let batch = RecordBatch::try_new(
             schema.clone(),
@@ -66,7 +73,7 @@ pub async fn run(receiver: &mut Receiver<TemperatureMessage>) -> Result<()> {
         if writer.flushed_row_groups().len() >= WRITE {
             info!("Close {}", writer.flushed_row_groups().len());
             writer.finish().await?;
-            *writer = Writer::new(store.clone(), schema.clone(), TEMPERATURE, date_time)?;
+            maybe_writer.take();
         }
     }
 }

@@ -1,15 +1,14 @@
-use std::net::{IpAddr, SocketAddr, SocketAddrV4};
-
 use anyhow::Result;
 use config::{ConfigBuilder, File, FileFormat, builder::DefaultState};
 use serde::Deserialize;
+use std::net::SocketAddrV4;
 
 static DEFAULT_CONFIG: &str = include_str!("../default_config.toml");
 
 #[derive(Debug, Deserialize)]
 pub(crate) struct Config {
-    temperature: Temperature,
-    turbidity: Turbidity,
+    temperature: Logger,
+    turbidity: Logger,
 }
 
 impl Config {
@@ -29,14 +28,7 @@ impl Config {
 }
 
 #[derive(Debug, Deserialize)]
-pub(crate) struct Temperature {
-    address: SocketAddrV4,
-    count: usize,
-    interval: u64,
-}
-
-#[derive(Debug, Deserialize)]
-pub(crate) struct Turbidity {
+pub(crate) struct Logger {
     address: SocketAddrV4,
     count: usize,
     interval: u64,

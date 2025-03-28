@@ -3,9 +3,13 @@ output = "./output"
 [temperature]
 address = "192.168.0.113:5502"
 count = 2
+flush = 60
 interval = 1
+write = 10
 
 [turbidity]
 address = "192.168.0.148:5502"
 count = 1
+flush = 60
 interval = 1
+write = 10

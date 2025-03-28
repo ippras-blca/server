@@ -1,6 +1,4 @@
 #![feature(iter_array_chunks)]
-#![feature(once_cell_try)]
-#![feature(once_cell_get_mut)]
 
 use anyhow::Result;
 use clap::Parser;
@@ -16,7 +14,7 @@ use tracing::{debug, error, info};
 
 const CHANNEL_LENGTH: usize = 1;
 
-/// MQTT broker
+/// BLCA server
 #[derive(Parser)]
 #[command(version, about)]
 struct Args {
@@ -27,8 +25,8 @@ struct Args {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    tracing_subscriber::fmt::init();
-    // console_subscriber::init();
+    console_subscriber::init();
+    // tracing_subscriber::fmt::init();
     // let reload_handle = log::with_reload_handle();
     // log::init();
     info!("Log init");
