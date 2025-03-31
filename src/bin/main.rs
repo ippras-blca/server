@@ -11,9 +11,9 @@ use parquet::arrow::async_writer::ParquetObjectWriter;
 /// does not error on a missing `Content-Length` header.
 #[tokio::main]
 async fn main() -> Result<()> {
-    // https://github.com/ippras-blca/storage/blob/main/temperature/2025-03-28-13-22-02.log.parquet
+    // https://github.com/ippras-blcs/storage/blob/main/temperature/2025-03-28-13-22-02.log.parquet
     let http_store = HttpBuilder::new()
-        .with_url("https://raw.githubusercontent.com/ippras-blca/storage/refs/heads/main")
+        .with_url("https://raw.githubusercontent.com/ippras-blcs/storage/refs/heads/main")
         .build()?;
 
     // let result = http_store

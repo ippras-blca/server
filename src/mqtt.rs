@@ -7,9 +7,9 @@ use tracing::{error, trace};
 
 const MQTT_HOST: &str = "broker.emqx.io";
 const MQTT_PORT: u16 = 1883;
-const MQTT_ID: &str = "ippras.ru/blca/server";
-const MQTT_TOPIC_TEMPERATURE: &str = "ippras.ru/blca/temperature";
-const MQTT_TOPIC_TURBIDITY: &str = "ippras.ru/blca/turbidity";
+const MQTT_ID: &str = "ippras.ru/blcs/server";
+const MQTT_TOPIC_TEMPERATURE: &str = "ippras.ru/blcs/temperature";
+const MQTT_TOPIC_TURBIDITY: &str = "ippras.ru/blcs/turbidity";
 const CAPACITY: usize = 9;
 const SLEEP: u64 = 1;
 

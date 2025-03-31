@@ -14,7 +14,7 @@ use tracing::{debug, error, info};
 
 const CHANNEL_LENGTH: usize = 1;
 
-/// BLCA server
+/// BLCS server
 #[derive(Parser)]
 #[command(version, about)]
 struct Args {

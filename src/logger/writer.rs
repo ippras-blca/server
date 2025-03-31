@@ -13,7 +13,7 @@ use std::{
 use typed_builder::TypedBuilder;
 
 const FORMAT: &str = "%Y-%m-%d-%H-%M-%S";
-const OUTPUT: &str = "D:/g/git/ippras-blca/server/output";
+const OUTPUT: &str = "D:/g/git/ippras-blcs/server/output";
 const PARQUET: &str = "log.parquet";
 
 type ALL<'a> = (

@@ -11,7 +11,7 @@ use std::{str, sync::atomic::Ordering, time::Duration};
 use tokio::time::sleep;
 use tracing::{error, info, warn};
 
-const MQTT_TOPIC_COMMANDER: &str = "ippras.ru/blca/commander";
+const MQTT_TOPIC_COMMANDER: &str = "ippras.ru/blcs/commander";
 const SLEEP: u64 = 1;
 
 pub(crate) async fn run(mut tx: LinkTx, mut rx: LinkRx) -> Result<()> {
