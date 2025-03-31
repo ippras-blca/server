@@ -8,8 +8,8 @@ use tracing::{error, trace};
 const MQTT_HOST: &str = "broker.emqx.io";
 const MQTT_PORT: u16 = 1883;
 const MQTT_ID: &str = "ippras.ru/blcs/server";
-const MQTT_TOPIC_TEMPERATURE: &str = "ippras.ru/blcs/temperature";
-const MQTT_TOPIC_TURBIDITY: &str = "ippras.ru/blcs/turbidity";
+const MQTT_TOPIC_DTEC: &str = "ippras.ru/blcs/dtec";
+const MQTT_TOPIC_ATUC: &str = "ippras.ru/blcs/atuc";
 const CAPACITY: usize = 9;
 const SLEEP: u64 = 1;
 
@@ -48,7 +48,7 @@ async fn run(
             message = temperature_receiver.recv() => {
                 client
                 .publish(
-                    MQTT_TOPIC_TEMPERATURE,
+                    MQTT_TOPIC_DTEC,
                     QoS::ExactlyOnce,
                     false,
                     ron::to_string(&message?)?.into_bytes(),
@@ -58,7 +58,7 @@ async fn run(
             message = turbidity_receiver.recv() => {
                 client
                 .publish(
-                    MQTT_TOPIC_TURBIDITY,
+                    MQTT_TOPIC_ATUC,
                     QoS::ExactlyOnce,
                     false,
                     ron::to_string(&message?)?.into_bytes(),
