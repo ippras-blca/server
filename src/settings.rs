@@ -1,25 +1,25 @@
 use anyhow::Result;
-use config::{ConfigBuilder, File, FileFormat, builder::DefaultState};
+use config::{Config, ConfigBuilder, File, FileFormat, builder::DefaultState};
 use serde::Deserialize;
 use std::net::SocketAddrV4;
 
 static DEFAULT_CONFIG: &str = include_str!("../default_config.toml");
 
 #[derive(Debug, Deserialize)]
-pub(crate) struct Config {
-    temperature: Logger,
-    turbidity: Logger,
+pub(crate) struct Settings {
+    pub(crate) temperature: Logger,
+    pub(crate) turbidity: Logger,
 }
 
-impl Config {
+impl Settings {
     pub(crate) fn new(path: &Option<String>) -> Result<Self> {
         let mut builder = Config::builder();
         builder = match path {
             Some(path) => builder.add_source(File::with_name(path)),
             None => builder.add_source(File::from_str(DEFAULT_CONFIG, FileFormat::Toml)),
         };
-        let config = builder.build()?.try_deserialize()?;
-        Ok(config)
+        let settings = builder.build()?.try_deserialize()?;
+        Ok(settings)
     }
 
     fn builder() -> ConfigBuilder<DefaultState> {
@@ -29,7 +29,7 @@ impl Config {
 
 #[derive(Debug, Deserialize)]
 pub(crate) struct Logger {
-    address: SocketAddrV4,
-    count: usize,
-    interval: u64,
+    pub(crate) address: SocketAddrV4,
+    pub(crate) count: u16,
+    pub(crate) interval: u64,
 }

@@ -1,47 +1,43 @@
+use crate::SETTINGS;
 use anyhow::Result;
 use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
-use std::fmt::{self, Display, Formatter};
+use std::{
+    fmt::{self, Display, Formatter},
+    sync::LazyLock,
+};
 use tokio::{
     sync::broadcast::Sender,
-    task::JoinHandle,
-    time::{Duration, interval, sleep, timeout},
+    task::{Builder, JoinHandle},
+    time::{Duration, interval, timeout},
 };
 use tokio_modbus::{client::Context, prelude::*};
-use tracing::{debug, error};
+use tracing::{debug, instrument};
 
 const INPUT_REGISTER_SIZE: u16 = 6;
-const MODBUS_SERVER_ADDRESS: &str = "192.168.0.113:5502";
-const COUNT: u16 = 2;
-const INTERVAL: u64 = 1;
-const TIMEOUT: u64 = 2 * INTERVAL;
-const SLEEP: u64 = 10 * INTERVAL;
+const TIMEOUT: LazyLock<u64> = LazyLock::new(|| 2 * SETTINGS.temperature.interval);
 
-pub(crate) async fn start(mut sender: Sender<Message>) -> JoinHandle<()> {
-    loop {
-        if let Err(error) = run(&mut sender).await {
-            error!(%error);
-        }
-        sleep(Duration::from_secs(SLEEP)).await;
-    }
+pub(crate) fn serve(sender: Sender<Message>) -> Result<JoinHandle<Result<()>>> {
+    Ok(Builder::new().name("temperature").spawn(run(sender))?)
 }
 
-async fn run(sender: &mut Sender<Message>) -> Result<()> {
-    let socket_addr = MODBUS_SERVER_ADDRESS.parse().unwrap();
-    let mut context = tcp::connect(socket_addr).await?;
-    let mut interval = interval(Duration::from_secs(INTERVAL));
+#[instrument(err)]
+async fn run(sender: Sender<Message>) -> Result<()> {
+    let mut context = tcp::connect(SETTINGS.temperature.address.into()).await?;
+    let mut interval = interval(Duration::from_secs(SETTINGS.temperature.interval));
     loop {
         interval.tick().await;
-        let response = timeout(Duration::from_secs(TIMEOUT), read(&mut context)).await??;
-        debug!("temperature response: {response:x?}");
-        sender.send(response)?;
+        let message = timeout(Duration::from_secs(*TIMEOUT), read(&mut context)).await??;
+        debug!("temperature message: {message:x?}");
+        sender.send(message)?;
     }
 }
 
+#[instrument(err)]
 async fn read(context: &mut Context) -> Result<Message> {
     let date_time = Local::now();
     let data = context
-        .read_input_registers(0, COUNT * INPUT_REGISTER_SIZE)
+        .read_input_registers(0, SETTINGS.temperature.count * INPUT_REGISTER_SIZE)
         .await??;
     let (identifiers, values) = data
         .into_iter()
