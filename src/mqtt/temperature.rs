@@ -21,8 +21,8 @@ use tracing::{debug, instrument, warn};
 
 #[instrument(err)]
 pub(super) async fn run(
-    client: AsyncClient,
     receiver: broadcast::Receiver<Message>,
+    client: AsyncClient,
     cancellation: CancellationToken,
 ) -> Result<()> {
     let channel = watch::channel(Message::default());

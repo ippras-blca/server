@@ -13,25 +13,15 @@ config = "0.15.11"
 console-subscriber = "0.4.1"
 futures-async-stream = "0.2.12"
 futures-util = "0.3.31"
-google_drive = { git = "https://github.com/ippras-blc/google_drive" }
 object_store = { version = "0.11.0", features = ["http"] }
 parquet = { version = "54.3.1", features = ["arrow", "async", "object_store"] }
-polars = { version = "0.46.0", features = [
-    "dtype-datetime",
-    "dtype-u16",
-    "fmt_no_tty",
-    "ipc",
-    "serde",
-    "temporal",
-], default-features = false }
-ron = "0.9.0"
 rumqttc = "0.24.0"
-rumqttd = "0.19.0"
 scopeguard = "1.2.0"
 serde = { version = "1.0.219", features = ["derive"] }
 thiserror = "2.0.12"
 tokio = { version = "1.44.1", features = [
     "rt-multi-thread",
+    "signal",
     "sync",
     "time",
     "tracing",
@@ -41,3 +31,15 @@ tokio-util = "0.7.14"
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
 typed-builder = "0.21.0"
+
+# google_drive = { git = "https://github.com/ippras-blc/google_drive" }
+# polars = { version = "0.46.0", features = [
+#     "dtype-datetime",
+#     "dtype-u16",
+#     "fmt_no_tty",
+#     "ipc",
+#     "serde",
+#     "temporal",
+# ], default-features = false }
+# ron = "0.9.0"
+# rumqttd = "0.19.0"

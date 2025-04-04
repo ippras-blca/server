@@ -1,9 +1,8 @@
-use std::sync::Arc;
-
 use anyhow::Result;
 use futures_util::stream::StreamExt;
 use object_store::{GetOptions, GetRange, ObjectStore, PutPayload, http::HttpBuilder, path::Path};
 use parquet::arrow::async_writer::ParquetObjectWriter;
+use std::sync::Arc;
 
 // ba9ef89ad1700e99743edbe3cc896b17
 // gxvfqijtupobvequ

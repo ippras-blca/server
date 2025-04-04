@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use super::MQTT_TOPIC_ATUC;
 use crate::turbidity::Message;
 use anyhow::Result;
@@ -6,7 +8,6 @@ use arrow::{
     datatypes::{DataType, Field, Schema, TimeUnit},
     ipc::writer::StreamWriter,
 };
-use polars::prelude::*;
 use rumqttc::{AsyncClient, QoS};
 use tokio::{
     select,
@@ -23,8 +24,8 @@ const COUNT: usize = 1;
 
 #[instrument(err)]
 pub(super) async fn run(
-    client: AsyncClient,
     receiver: broadcast::Receiver<Message>,
+    client: AsyncClient,
     cancellation: CancellationToken,
 ) -> Result<()> {
     let channel = watch::channel(Message::default());

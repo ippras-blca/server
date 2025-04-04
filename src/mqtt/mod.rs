@@ -57,13 +57,13 @@ async fn run(
     }
     // Publish
     let temperature = temperature::run(
-        client.clone(),
         temperature_receiver.resubscribe(),
+        client.clone(),
         cancellation.clone(),
     );
     let turbidity = turbidity::run(
-        client.clone(),
         turbidity_receiver.resubscribe(),
+        client.clone(),
         cancellation.clone(),
     );
     select! {

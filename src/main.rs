@@ -5,22 +5,10 @@ use anyhow::Result;
 use clap::Parser;
 use config::{Config, File, FileFormat};
 use settings::Settings;
-use std::{
-    fs::exists,
-    path::Path,
-    sync::{Arc, LazyLock, OnceLock},
-    thread,
-    time::Duration,
-};
-use tokio::{
-    select,
-    signal::{self, ctrl_c},
-    spawn,
-    sync::{broadcast, watch},
-    time::{Sleep, sleep},
-};
+use std::{fs::exists, path::Path, sync::LazyLock, time::Duration};
+use tokio::{select, sync::broadcast, time::sleep};
 use tokio_util::sync::CancellationToken;
-use tracing::{debug, error, info};
+use tracing::{error, info};
 
 const SLEEP: Duration = Duration::from_secs(10);
 const CHANNEL_LENGTH: usize = 1;
@@ -49,7 +37,6 @@ struct Args {
     config: Option<String>,
 }
 
-// #[tokio::main]
 #[tokio::main(flavor = "multi_thread")]
 async fn main() -> Result<()> {
     console_subscriber::init();
