@@ -18,7 +18,7 @@ const MQTT_TOPIC_DTEC: &str = "ippras.ru/blcs/dtec";
 const MQTT_TOPIC_ATUC: &str = "ippras.ru/blcs/atuc";
 const CAPACITY: usize = 9;
 
-pub(crate) fn serve(
+pub(crate) fn spawn(
     temperature_receiver: broadcast::Receiver<TemperatureMessage>,
     turbidity_receiver: broadcast::Receiver<TurbidityMessage>,
     cancellation: CancellationToken,

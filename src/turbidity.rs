@@ -19,7 +19,7 @@ use tracing::{debug, instrument};
 const INPUT_REGISTER_SIZE: u16 = 1;
 const TIMEOUT: LazyLock<u64> = LazyLock::new(|| 2 * SETTINGS.turbidity.interval);
 
-pub(crate) fn serve(sender: Sender<Message>) -> Result<JoinHandle<Result<()>>> {
+pub(crate) fn spawn(sender: Sender<Message>) -> Result<JoinHandle<Result<()>>> {
     Ok(Builder::new().name("turbidity").spawn(run(sender))?)
 }
 

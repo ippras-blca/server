@@ -17,7 +17,7 @@ use tracing::{debug, instrument};
 const INPUT_REGISTER_SIZE: u16 = 6;
 const TIMEOUT: LazyLock<u64> = LazyLock::new(|| 2 * SETTINGS.temperature.interval);
 
-pub(crate) fn serve(sender: Sender<Message>) -> Result<JoinHandle<Result<()>>> {
+pub(crate) fn spawn(sender: Sender<Message>) -> Result<JoinHandle<Result<()>>> {
     Ok(Builder::new().name("temperature").spawn(run(sender))?)
 }
 

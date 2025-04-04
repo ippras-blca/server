@@ -76,18 +76,18 @@ async fn main() -> Result<()> {
 async fn run(cancellation: &CancellationToken) -> Result<()> {
     let (temperature_sender, temperature_receiver) = broadcast::channel(CHANNEL_LENGTH);
     let (turbidity_sender, turbidity_receiver) = broadcast::channel(CHANNEL_LENGTH);
-    logger::serve(
+    logger::spawn(
         temperature_receiver.resubscribe(),
         turbidity_receiver.resubscribe(),
         cancellation.clone(),
     )?;
-    mqtt::serve(
+    mqtt::spawn(
         temperature_receiver.resubscribe(),
         turbidity_receiver.resubscribe(),
         cancellation.clone(),
     )?;
-    let temperature = temperature::serve(temperature_sender)?;
-    let turbidity = turbidity::serve(turbidity_sender)?;
+    let temperature = temperature::spawn(temperature_sender)?;
+    let turbidity = turbidity::spawn(turbidity_sender)?;
     select! {
         result = temperature => result??,
         result = turbidity => result??,
