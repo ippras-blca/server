@@ -1,5 +1,5 @@
 use super::Writer;
-use crate::turbidity::Message;
+use crate::{SETTINGS, turbidity::Message};
 use anyhow::Result;
 use arrow::{
     array::{RecordBatch, TimestampMillisecondArray, UInt16Array, UInt64Array},
@@ -17,8 +17,6 @@ use tracing::{debug, info, instrument, warn};
 
 const TURBIDITY: &str = "turbidity";
 const CHANNEL_BUFFER: usize = 64;
-const FLUSH: usize = 60;
-const WRITE: usize = 10;
 
 #[instrument(err)]
 pub async fn run(
@@ -115,13 +113,13 @@ async fn write(mut receiver: mpsc::Receiver<Message>) -> Result<()> {
         )?;
         writer.write(&batch).await?;
         // Check for flush
-        if writer.in_progress_rows() >= FLUSH {
+        if writer.in_progress_rows() >= SETTINGS.turbidity.flush() {
             info!("Flush {}", writer.in_progress_rows());
             writer.flush().await?
         }
         // Check for writer
-        if writer.flushed_row_groups().len() >= WRITE {
-            info!("Close {}", writer.flushed_row_groups().len());
+        if writer.flushed_row_groups().len() >= SETTINGS.turbidity.finish {
+            info!("Finish {}", writer.flushed_row_groups().len());
             writer.finish().await?;
             maybe_writer.take();
         }

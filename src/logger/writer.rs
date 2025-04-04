@@ -1,3 +1,4 @@
+use crate::SETTINGS;
 use anyhow::Result;
 use arrow::datatypes::SchemaRef;
 use chrono::{DateTime, Local};
@@ -13,7 +14,6 @@ use std::{
 use typed_builder::TypedBuilder;
 
 const FORMAT: &str = "%Y-%m-%d-%H-%M-%S";
-const OUTPUT: &str = "D:/g/git/ippras-blcs/storage";
 const PARQUET: &str = "log.parquet";
 
 type ALL<'a> = (
@@ -39,7 +39,7 @@ struct _Writer<'a> {
 impl<'a> WriterBuilder<'a, ALL<'a>> {
     pub(crate) fn build(self) -> Result<Writer> {
         let build = self._build();
-        let path = PathBuf::from(OUTPUT)
+        let path = PathBuf::from(&SETTINGS.output)
             .join(build.folder)
             .join(build.date_time.format(FORMAT).to_string())
             .with_extension(PARQUET);

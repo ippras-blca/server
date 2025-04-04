@@ -3,30 +3,16 @@
 
 use anyhow::Result;
 use clap::Parser;
-use config::{Config, File, FileFormat};
 use settings::Settings;
-use std::{fs::exists, path::Path, sync::LazyLock, time::Duration};
+use std::{sync::LazyLock, time::Duration};
 use tokio::{select, sync::broadcast, time::sleep};
 use tokio_util::sync::CancellationToken;
 use tracing::{error, info};
 
 const SLEEP: Duration = Duration::from_secs(10);
 const CHANNEL_LENGTH: usize = 1;
-static DEFAULT_CONFIG: &str = include_str!("../default_config.toml");
-static CONFIG: &str = "./config.toml";
-static SETTINGS: LazyLock<Settings> = LazyLock::new(|| {
-    (|| -> Result<_> {
-        let path = Path::new(CONFIG);
-        let mut builder = Config::builder();
-        builder = match exists(path) {
-            Ok(true) => builder.add_source(File::from(path)),
-            _ => builder.add_source(File::from_str(DEFAULT_CONFIG, FileFormat::Toml)),
-        };
-        let settings = builder.build()?.try_deserialize()?;
-        Ok(settings)
-    })()
-    .unwrap()
-});
+
+static SETTINGS: LazyLock<Settings> = LazyLock::new(|| Settings::new(None).unwrap());
 
 /// BLCS server
 #[derive(Parser)]

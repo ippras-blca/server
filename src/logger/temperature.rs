@@ -1,5 +1,5 @@
 use super::Writer;
-use crate::temperature::Message;
+use crate::{SETTINGS, temperature::Message};
 use anyhow::Result;
 use arrow::{
     array::{Float32Array, RecordBatch, TimestampMillisecondArray, UInt64Array},
@@ -17,8 +17,6 @@ use tracing::{debug, info, instrument, warn};
 
 const TEMPERATURE: &str = "temperature";
 const CHANNEL_BUFFER: usize = 64;
-const FLUSH: usize = 120;
-const WRITE: usize = 10;
 
 #[instrument(err)]
 pub async fn run(
@@ -115,13 +113,13 @@ pub async fn write(mut receiver: mpsc::Receiver<Message>) -> Result<()> {
         )?;
         writer.write(&batch).await?;
         // Check for flush
-        if writer.in_progress_rows() >= FLUSH {
+        if writer.in_progress_rows() >= SETTINGS.temperature.flush() {
             info!("Flush {}", writer.in_progress_rows());
             writer.flush().await?
         }
         // Check for writer
-        if writer.flushed_row_groups().len() >= WRITE {
-            info!("Close {}", writer.flushed_row_groups().len());
+        if writer.flushed_row_groups().len() >= SETTINGS.temperature.finish {
+            info!("Finish {}", writer.flushed_row_groups().len());
             writer.finish().await?;
             maybe_writer.take();
         }
