@@ -13,7 +13,10 @@ use tokio::{
     sync::{broadcast, watch},
     task::{Builder, JoinHandle},
 };
-use tokio_util::sync::CancellationToken;
+use tokio_util::{
+    bytes::{BufMut as _, BytesMut},
+    sync::CancellationToken,
+};
 use tracing::{debug, instrument, warn};
 
 #[instrument(err)]
@@ -62,15 +65,13 @@ fn writer(
     client: AsyncClient,
     cancellation: CancellationToken,
 ) -> Result<JoinHandle<()>> {
-    Ok(Builder::new()
-        .name("writer")
-        .spawn_local(Box::pin(async move {
-            select! {
-                biased;
-                _ = cancellation.cancelled() => warn!("mqtt temperature writer cancelled"),
-                _ = write(receiver, client.clone()) => warn!("mqtt temperature writer returned"),
-            }
-        }))?)
+    Ok(Builder::new().name("writer").spawn(Box::pin(async move {
+        select! {
+            biased;
+            _ = cancellation.cancelled() => warn!("mqtt temperature writer cancelled"),
+            _ = write(receiver, client.clone()) => warn!("mqtt temperature writer returned"),
+        }
+    }))?)
 }
 
 #[instrument(err)]
@@ -86,13 +87,13 @@ async fn write(mut receiver: watch::Receiver<Message>, client: AsyncClient) -> R
     ]));
     loop {
         receiver.changed().await?;
-        let message = receiver.borrow_and_update();
+        let message = receiver.borrow_and_update().clone();
         let count = message.identifiers.len();
         let batch = RecordBatch::try_new(
             schema.clone(),
             vec![
-                Arc::new(UInt64Array::from(message.identifiers.clone())),
-                Arc::new(Float32Array::from(message.values.clone())),
+                Arc::new(UInt64Array::from(message.identifiers)),
+                Arc::new(Float32Array::from(message.values)),
                 Arc::new(TimestampMillisecondArray::from_value(
                     message.date_time.timestamp_millis(),
                     count,
@@ -100,12 +101,17 @@ async fn write(mut receiver: watch::Receiver<Message>, client: AsyncClient) -> R
             ],
         )?;
         debug!(?batch);
-        let mut payload = Vec::new();
-        let mut writer = StreamWriter::try_new(&mut payload, &batch.schema())?;
+        let mut bytes = BytesMut::new().writer();
+        let mut writer = StreamWriter::try_new(&mut bytes, &batch.schema())?;
         writer.write(&batch)?;
         writer.finish()?;
         client
-            .publish(MQTT_TOPIC_DTEC, QoS::ExactlyOnce, false, payload)
+            .publish_bytes(
+                MQTT_TOPIC_DTEC,
+                QoS::ExactlyOnce,
+                false,
+                bytes.into_inner().freeze(),
+            )
             .await?;
     }
 }

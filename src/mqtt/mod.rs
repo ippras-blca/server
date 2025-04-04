@@ -23,7 +23,7 @@ pub(crate) fn spawn(
     turbidity_receiver: broadcast::Receiver<TurbidityMessage>,
     cancellation: CancellationToken,
 ) -> io::Result<JoinHandle<()>> {
-    Builder::new().name("logger").spawn(Box::pin(async move {
+    Builder::new().name("mqtt").spawn(Box::pin(async move {
         loop {
             select! {
                 biased;

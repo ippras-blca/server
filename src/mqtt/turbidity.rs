@@ -13,7 +13,10 @@ use tokio::{
     sync::{broadcast, watch},
     task::{Builder, JoinHandle},
 };
-use tokio_util::sync::CancellationToken;
+use tokio_util::{
+    bytes::{BufMut as _, BytesMut},
+    sync::CancellationToken,
+};
 use tracing::{debug, instrument, warn};
 
 const COUNT: usize = 1;
@@ -64,15 +67,13 @@ fn writer(
     client: AsyncClient,
     cancellation: CancellationToken,
 ) -> Result<JoinHandle<()>> {
-    Ok(Builder::new()
-        .name("writer")
-        .spawn_local(Box::pin(async move {
-            select! {
-                biased;
-                _ = cancellation.cancelled() => warn!("mqtt turbidity writer cancelled"),
-                _ = write(receiver, client.clone()) => warn!("mqtt turbidity writer returned"),
-            }
-        }))?)
+    Ok(Builder::new().name("writer").spawn(Box::pin(async move {
+        select! {
+            biased;
+            _ = cancellation.cancelled() => warn!("mqtt turbidity writer cancelled"),
+            _ = write(receiver, client.clone()) => warn!("mqtt turbidity writer returned"),
+        }
+    }))?)
 }
 
 #[instrument(err)]
@@ -88,7 +89,7 @@ async fn write(mut receiver: watch::Receiver<Message>, client: AsyncClient) -> R
     ]));
     loop {
         receiver.changed().await?;
-        let message = receiver.borrow_and_update();
+        let message = *receiver.borrow_and_update();
         let batch = RecordBatch::try_new(
             schema.clone(),
             vec![
@@ -101,12 +102,17 @@ async fn write(mut receiver: watch::Receiver<Message>, client: AsyncClient) -> R
             ],
         )?;
         debug!(?batch);
-        let mut payload = Vec::new();
-        let mut writer = StreamWriter::try_new(&mut payload, &batch.schema())?;
+        let mut bytes = BytesMut::new().writer();
+        let mut writer = StreamWriter::try_new(&mut bytes, &batch.schema())?;
         writer.write(&batch)?;
         writer.finish()?;
         client
-            .publish(MQTT_TOPIC_ATUC, QoS::ExactlyOnce, false, payload)
+            .publish(
+                MQTT_TOPIC_ATUC,
+                QoS::ExactlyOnce,
+                false,
+                bytes.into_inner().freeze(),
+            )
             .await?;
     }
 }
