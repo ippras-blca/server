@@ -1,14 +1,14 @@
 [package]
 name = "server"
 version = "0.1.0"
-authors = ["kgv <kgv@users.noreply.github.com>"]
+authors = ["Kazakov Giorgi Vladimirovich", "Sidorov Roman Alexandrovich"]
 edition = "2024"
 
 [dependencies]
 anyhow = "1.0.97"
 arrow = "54.3.1"
 chrono = "0.4.40"
-clap = { version = "4.5.34", features = ["derive"] }
+clap = { version = "4.5.35", features = ["derive"] }
 config = "0.15.11"
 console-subscriber = "0.4.1"
 futures-async-stream = "0.2.12"
@@ -19,7 +19,7 @@ rumqttc = "0.24.0"
 scopeguard = "1.2.0"
 serde = { version = "1.0.219", features = ["derive"] }
 thiserror = "2.0.12"
-tokio = { version = "1.44.1", features = [
+tokio = { version = "1.44.2", features = [
     "rt-multi-thread",
     "signal",
     "sync",
