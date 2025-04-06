@@ -15,6 +15,14 @@ futures-async-stream = "0.2.12"
 futures-util = "0.3.31"
 object_store = { version = "0.11.0", features = ["http"] }
 parquet = { version = "54.3.1", features = ["arrow", "async", "object_store"] }
+polars = { version = "0.46.0", features = [
+    "dtype-datetime",
+    "dtype-u16",
+    "fmt_no_tty",
+    "parquet",
+    "serde",
+    "temporal",
+], default-features = false }
 rumqttc = "0.24.0"
 scopeguard = "1.2.0"
 serde = { version = "1.0.219", features = ["derive"] }
@@ -33,13 +41,5 @@ tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
 typed-builder = "0.21.0"
 
 # google_drive = { git = "https://github.com/ippras-blc/google_drive" }
-# polars = { version = "0.46.0", features = [
-#     "dtype-datetime",
-#     "dtype-u16",
-#     "fmt_no_tty",
-#     "ipc",
-#     "serde",
-#     "temporal",
-# ], default-features = false }
 # ron = "0.9.0"
 # rumqttd = "0.19.0"
