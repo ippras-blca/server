@@ -75,12 +75,12 @@ fn writer(
 async fn write(mut receiver: mpsc::Receiver<Message>) -> Result<()> {
     let schema = Arc::new(Schema::new(vec![
         Field::new("Identifier", DataType::UInt64, false),
-        Field::new("Turbidity", DataType::UInt16, false),
         Field::new(
             "Timestamp",
             DataType::Timestamp(TimeUnit::Millisecond, None),
             false,
         ),
+        Field::new("Turbidity", DataType::UInt16, false),
     ]));
     let store = Arc::new(LocalFileSystem::new());
     let builder = Writer::builder()
@@ -90,8 +90,8 @@ async fn write(mut receiver: mpsc::Receiver<Message>) -> Result<()> {
     let mut maybe_writer = None;
     while let Some(Message {
         identifier,
-        value,
         date_time,
+        value,
     }) = receiver.recv().await
     {
         let writer = match &mut maybe_writer {
@@ -104,11 +104,11 @@ async fn write(mut receiver: mpsc::Receiver<Message>) -> Result<()> {
             schema.clone(),
             vec![
                 Arc::new(UInt64Array::from_value(identifier, count)),
-                Arc::new(UInt16Array::from_value(value, count)),
                 Arc::new(TimestampMillisecondArray::from_value(
                     date_time.timestamp_millis(),
                     count,
                 )),
+                Arc::new(UInt16Array::from_value(value, count)),
             ],
         )?;
         writer.write(&batch).await?;

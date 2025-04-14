@@ -44,24 +44,24 @@ async fn read(context: &mut Context) -> Result<Message> {
         .await??;
     Ok(Message {
         identifier,
-        value: data[0],
         date_time,
+        value: data[0],
     })
 }
 
 #[derive(Clone, Copy, Debug, Default, Deserialize, Serialize)]
 pub(crate) struct Message {
     pub(crate) identifier: u64,
-    pub(crate) value: u16,
     pub(crate) date_time: DateTime<Local>,
+    pub(crate) value: u16,
 }
 
 impl Display for Message {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         writeln!(
             f,
-            "identifier = {:x}, value = {}, date_time = {}",
-            self.identifier, self.value, self.date_time,
+            "identifier = {:x}, date_time = {}, value = {}",
+            self.identifier, self.date_time, self.value,
         )
     }
 }

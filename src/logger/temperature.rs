@@ -75,12 +75,12 @@ pub(crate) fn writer(
 pub async fn write(mut receiver: mpsc::Receiver<Message>) -> Result<()> {
     let schema = Arc::new(Schema::new(vec![
         Field::new("Identifier", DataType::UInt64, false),
-        Field::new("Temperature", DataType::Float32, false),
         Field::new(
             "Timestamp",
             DataType::Timestamp(TimeUnit::Millisecond, None),
             false,
         ),
+        Field::new("Temperature", DataType::Float32, false),
     ]));
     let store = Arc::new(LocalFileSystem::new());
     let builder = Writer::builder()
@@ -90,8 +90,8 @@ pub async fn write(mut receiver: mpsc::Receiver<Message>) -> Result<()> {
     let mut maybe_writer = None;
     while let Some(Message {
         identifiers,
-        values,
         date_time,
+        values,
     }) = receiver.recv().await
     {
         let writer = match &mut maybe_writer {
@@ -104,11 +104,11 @@ pub async fn write(mut receiver: mpsc::Receiver<Message>) -> Result<()> {
             schema.clone(),
             vec![
                 Arc::new(UInt64Array::from(identifiers)),
-                Arc::new(Float32Array::from(values)),
                 Arc::new(TimestampMillisecondArray::from_value(
                     date_time.timestamp_millis(),
                     count,
                 )),
+                Arc::new(Float32Array::from(values)),
             ],
         )?;
         writer.write(&batch).await?;

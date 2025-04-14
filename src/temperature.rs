@@ -57,24 +57,24 @@ async fn read(context: &mut Context) -> Result<Message> {
         .unzip();
     Ok(Message {
         identifiers,
-        values,
         date_time,
+        values,
     })
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub(crate) struct Message {
     pub(crate) identifiers: Vec<u64>,
-    pub(crate) values: Vec<f32>,
     pub(crate) date_time: DateTime<Local>,
+    pub(crate) values: Vec<f32>,
 }
 
 impl Display for Message {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         writeln!(
             f,
-            "identifiers = {:x?}, values = {:?}, date_time = {}",
-            self.identifiers, self.values, self.date_time,
+            "identifiers = {:x?}, date_time = {}, values = {:?}",
+            self.identifiers, self.date_time, self.values,
         )
     }
 }
